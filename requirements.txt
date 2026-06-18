@@ -5,3 +5,4 @@ plotly
 openai
 langchain
 langchain-openai
+dotenv
