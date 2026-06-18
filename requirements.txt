@@ -3,3 +3,5 @@ pandas
 duckdb
 plotly
 openai
+langchain
+langchain-openai
