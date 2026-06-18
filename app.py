@@ -73,15 +73,26 @@ div[data-testid="stTextInput"] input{border-radius:8px !important;font-size:14px
 # ─────────────────────────────────────────────────────────────────
 # LLM  (unchanged)
 # ─────────────────────────────────────────────────────────────────
+# llm = ChatOpenAI(
+#     base_url=os.getenv("LLM_BASE_URL"),
+#     api_key=os.getenv("LLM_API_KEY"),
+#     default_headers={"x-api-key": os.getenv("LLM_HEADER_KEY")},
+#     model="openai.gpt-4o",
+#     temperature=0,
+#     max_completion_tokens=600,
+# )
+
+
 llm = ChatOpenAI(
-    base_url=os.getenv("LLM_BASE_URL"),
-    api_key=os.getenv("LLM_API_KEY"),
-    default_headers={"x-api-key": os.getenv("LLM_HEADER_KEY")},
+    base_url=st.secrets["LLM_BASE_URL"],
+    api_key=st.secrets["LLM_API_KEY"],
+    default_headers={
+        "x-api-key": st.secrets["LLM_HEADER_KEY"]
+    },
     model="openai.gpt-4o",
     temperature=0,
-    max_completion_tokens=600,
+    max_tokens=600,
 )
-
 
 
 # ─────────────────────────────────────────────────────────────────
