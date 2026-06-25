@@ -902,7 +902,7 @@ def compute_data_quality(df: pd.DataFrame) -> dict:
     score -= min(len(type_issues) * 4, 16)
     score -= min(len(cardinality_flags) * 2, 10)
     score -= min(len(date_gaps) * 1, 10)
-    score -= min(len(spike_report) * 1, 4)
+    
     report["health_score"] = max(round(score, 1), 0.0)
     report["total_rows"]   = total_rows
     report["total_cols"]   = len(df.columns)
@@ -955,7 +955,7 @@ def render_data_quality(df: pd.DataFrame, table_name: str):
           <div class="stat-card"><div class="sv" style="color:{'#ef4444' if dq['total_null_pct']>10 else '#4fc3f7'};">{dq['total_null_pct']}%</div><div class="sl">Null Rate</div></div>
           <div class="stat-card"><div class="sv" style="color:{'#ef4444' if dq['duplicate_count']>0 else '#22c55e'};">{dq['duplicate_count']:,}</div><div class="sl">Duplicates</div></div>
           <div class="stat-card"><div class="sv" style="color:{'#f59e0b' if len(dq['outliers'])>0 else '#22c55e'};">{len(dq['outliers'])}</div><div class="sl">Outlier Cols</div></div>
-          <div class="stat-card"><div class="sv" style="color:{'#f59e0b' if len(dq['spikes'])>0 else '#22c55e'};">{len(dq['spikes'])}</div><div class="sl">Spike Cols</div></div>
+        
         </div>""", unsafe_allow_html=True)
 
     st.markdown("---")
@@ -1013,24 +1013,24 @@ def render_data_quality(df: pd.DataFrame, table_name: str):
         st.success("✅ No significant outliers detected across numeric columns!")
     st.markdown("---")
 
-    st.markdown("#### ⚡ Time-Series Spike Detection")
-    st.caption("Flags months where values deviate > 2.5 standard deviations from rolling average.")
-    if dq["spikes"]:
-        for col, spike_list in dq["spikes"].items():
-            with st.expander(f"📌 **{col}** — {len(spike_list)} spike(s) detected", expanded=True):
-                spike_df = pd.DataFrame(spike_list)
-                spike_df.columns = ["Period","Value","Z-Score","Direction"]
-                sc1, sc2 = st.columns([3, 2])
-                with sc1:
-                    fig_spike = px.bar(spike_df, x="Period", y="Value", color="Z-Score",
-                                       color_continuous_scale=["#f59e0b","#ef4444"], text="Direction", title=f"Spikes in {col}")
-                    fig_spike.update_layout(margin=dict(l=0,r=0,t=30,b=0), paper_bgcolor="rgba(0,0,0,0)", plot_bgcolor="rgba(0,0,0,0)", coloraxis_showscale=False)
-                    st.plotly_chart(fig_spike, use_container_width=True)
-                with sc2:
-                    st.dataframe(spike_df, use_container_width=True, hide_index=True)
-    else:
-        st.success("✅ No unusual spikes detected in time-series columns!")
-    st.markdown("---")
+    # st.markdown("#### ⚡ Time-Series Spike Detection")
+    # st.caption("Flags months where values deviate > 2.5 standard deviations from rolling average.")
+    # if dq["spikes"]:
+    #     for col, spike_list in dq["spikes"].items():
+    #         with st.expander(f"📌 **{col}** — {len(spike_list)} spike(s) detected", expanded=True):
+    #             spike_df = pd.DataFrame(spike_list)
+    #             spike_df.columns = ["Period","Value","Z-Score","Direction"]
+    #             sc1, sc2 = st.columns([3, 2])
+    #             with sc1:
+    #                 fig_spike = px.bar(spike_df, x="Period", y="Value", color="Z-Score",
+    #                                    color_continuous_scale=["#f59e0b","#ef4444"], text="Direction", title=f"Spikes in {col}")
+    #                 fig_spike.update_layout(margin=dict(l=0,r=0,t=30,b=0), paper_bgcolor="rgba(0,0,0,0)", plot_bgcolor="rgba(0,0,0,0)", coloraxis_showscale=False)
+    #                 st.plotly_chart(fig_spike, use_container_width=True)
+    #             with sc2:
+    #                 st.dataframe(spike_df, use_container_width=True, hide_index=True)
+    # else:
+    #     st.success("✅ No unusual spikes detected in time-series columns!")
+    # st.markdown("---")
 
     st.markdown("#### 🔧 Data Type Issue Detection")
     st.caption("Columns stored in wrong format — affects calculations and joins.")
@@ -1089,9 +1089,9 @@ def render_data_quality(df: pd.DataFrame, table_name: str):
         all_issues.append({"Column": "— (row level)", "Issue": "Duplicate Rows", "Detail": f"{dq['duplicate_count']:,} rows ({dq['duplicate_pct']}%)", "Severity": "🔴 Critical" if dq["duplicate_pct"] > 10 else "🟡 Warning"})
     for col, info in dq["outliers"].items():
         all_issues.append({"Column": col, "Issue": "Statistical Outliers", "Detail": f"{info['count']} values outside [{info['lower_fence']}, {info['upper_fence']}]", "Severity": "🟡 Warning" if info["pct"] < 5 else "🔴 Critical"})
-    for col, spike_list in dq["spikes"].items():
-        for sp in spike_list:
-            all_issues.append({"Column": col, "Issue": "Time-Series Spike", "Detail": f"{sp['period']} — value {sp['value']:,} (Z={sp['z_score']}) {sp['direction']}", "Severity": "🟡 Warning"})
+    # for col, spike_list in dq["spikes"].items():
+    #     for sp in spike_list:
+    #         all_issues.append({"Column": col, "Issue": "Time-Series Spike", "Detail": f"{sp['period']} — value {sp['value']:,} (Z={sp['z_score']}) {sp['direction']}", "Severity": "🟡 Warning"})
     for issue in dq["type_issues"]:
         all_issues.append({"Column": issue["column"], "Issue": "Data Type Mismatch", "Detail": issue["issue"], "Severity": "🟡 Warning"})
     for flag in dq["cardinality_flags"]:
